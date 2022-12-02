@@ -5,7 +5,7 @@ import {
   deleteOneHistorico,
   insertHistorico,
   updateHistorico,
-} from "../controllers/historico.controller.js";
+} from "../controllers/pos.controller.js";
 
 const router = Router();
 
