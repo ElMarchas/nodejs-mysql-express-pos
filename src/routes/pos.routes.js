@@ -1,7 +1,8 @@
 import { Router } from "express";
 import {
-  selectLastHistorico,
-  selectOneHistorico,
+  queryProducts,
+  queryTable,
+  insertTable,
   deleteOneHistorico,
   insertHistorico,
   updateHistorico,
@@ -9,8 +10,9 @@ import {
 
 const router = Router();
 
-router.get("/", selectLastHistorico);
-router.get("/:codigo_p", selectOneHistorico);
+router.get("/:query", queryProducts);
+router.get("/table/:number", queryTable);
+router.post("/table/", insertTable);
 router.delete("/:id", deleteOneHistorico);
 router.post("/", insertHistorico);
 router.patch("/:id", updateHistorico);

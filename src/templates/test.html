@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test, delete after testing</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div class="container">
+      container pos
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group">
+            <label for="exampleInputEmail1">Buscar Producto</label>
+            <input
+              type="text"
+              class="form-control"
+              id="imput1"
+              aria-describedby="Search"
+              placeholder="Buscale"
+            />
+          </div>
+          <div id="table"></div>
+          <div class="form-check">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              id="exampleCheck1"
+            />
+            <label class="form-check-label" for="exampleCheck1"
+              >Check me out</label
+            >
+          </div>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+        <div class="col-6">
+          <div id="content" class="form-group">Contenido</div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script language="JavaScript">
+    const searchInput = document.getElementById("imput1");
+    const contentDiv = document.getElementById("content");
+    const tableDiv = document.getElementById("table");
+
+    const getProduct = async (request) => {
+      /*const queryDB = await fetch("http://localhost:3000/api/pos/" + request)
+        .then((response) => response.json())
+        .catch((error) => console.log(error));*/
+      try {
+        const queryDB = await fetch("http://localhost:3000/api/pos/" + request);
+
+        if (!queryDB.ok) return "Intenta de nuevo"; //console.log(queryDB.status);
+
+        const products = await queryDB.json();
+
+        if (products.message) return "Producto no encontrado";
+
+        return products;
+      } catch (error) {
+        return error;
+      }
+    };
+
+    const searchProduct = async (e) => {
+      if (!e.target.value.length) {
+        contentDiv.innerHTML = "";
+        return;
+      }
+      const products = await getProduct(e.target.value);
+      if (typeof products === "string") {
+        contentDiv.innerHTML = `<p>${products}</p>`;
+        return;
+      }
+      contentDiv.innerHTML = "";
+      console.log(products);
+      products.map((product) => {
+        const p = document.createElement("p");
+        p.innerHTML = product.descripcion;
+        p.setAttribute("id", product.id);
+        p.addEventListener("click", () => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", "http://localhost:3000/api/pos/table/", true);
+          xhr.setRequestHeader("Content-Type", "application/json");
+          xhr.send(
+            JSON.stringify({
+              number: 1,
+              code: product.codigo_p,
+            })
+          );
+          console.log(
+            JSON.stringify({
+              number: 1,
+              code: product.codigo_p,
+            })
+          );
+        });
+        contentDiv.append(p);
+      });
+    };
+
+    const tableLoad = async () => {
+      try {
+        tableDiv.innerHTML = "";
+        const queryDB = await fetch("http://localhost:3000/api/pos/table/1");
+        if (!queryDB.ok) return tableDiv.append("Error al solicitar los datos"); //console.log(queryDB.status);
+        const products = await queryDB.json();
+
+        if (products.message) return tableDiv.append("Tabla vacia");
+
+        console.log(products);
+        products.map((product) => {
+          const p = document.createElement("p");
+          p.innerHTML = `${product.descripcion} --- ${product.cant_compra}*${product.precio} --- $${product.importe}`;
+          p.setAttribute("id", product.id);
+          p.addEventListener("click", () => {
+            console.log(product.codigo_p);
+          });
+          tableDiv.append(p);
+        });
+      } catch (error) {
+        return error;
+      }
+    };
+
+    tableLoad();
+
+    searchInput.addEventListener("input", searchProduct);
+  </script>
+</html>
